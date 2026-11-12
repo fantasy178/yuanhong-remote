@@ -1,6 +1,6 @@
 html {
-    var(accent): #0071ff;
-    var(button): #2C8CFF;
+    var(accent): #E60012; /* Yuanhong red */
+    var(button): #E60012;
     var(gray-bg): #eee;
     var(bg): white;
     var(border): #ccc;

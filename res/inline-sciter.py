@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
 
 import re
+import builtins
+import functools
+
+# Yuanhong: UI sources contain CJK text; never rely on the runner's locale encoding.
+open = functools.partial(builtins.open, encoding='utf-8')
 
 
 def strip(s): return re.sub(r'\s+\n', '\n', re.sub(r'\n\s+', '\n', s))
 
 common_css = open('src/ui/common.css').read()
-common_tis = open('src/ui/common.tis', encoding='UTF8').read()
+common_tis = open('src/ui/common.tis').read()
 
 index = open('src/ui/index.html').read() \
     .replace('@import url(index.css);', open('src/ui/index.css').read()) \

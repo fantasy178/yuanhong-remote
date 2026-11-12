@@ -8,6 +8,11 @@ const incoming_only_width = 180;
 
 const outgoing_only = handler.is_outgoing_only();
 const incoming_only = handler.is_incoming_only();
+// Yuanhong: compact single-column home for the customer support build.
+const yh_compact = handler.get_app_name() == "YuanhongSupport";
+const yh_width = 360;
+const yh_height = 560;
+const yh_logo = "data:image/png;base64,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";
 const disable_installation = handler.is_disable_installation();
 const disable_account = handler.is_disable_account();
 const disable_settings = handler.is_disable_settings();
@@ -22,7 +27,9 @@ const disable_change_id = handler.get_builtin_option("disable-change-id") == "Y"
 
 // html min-width, min-height not working on mac, below works for all
 // Sciter applies Windows DPI scaling to these minimum dimensions.
-if (incoming_only) {
+if (yh_compact) {
+  view.windowMinSize = (320, 480);
+} else if (incoming_only) {
   view.windowMinSize = (incoming_only_width, (handler.is_installed() || disable_installation) ? 300 : 390);
 } else {
   view.windowMinSize = (560, 300);
@@ -710,6 +717,7 @@ class App: Reactor.Component
     }
 
     function render() {
+        if (yh_compact) return this.renderCompact();
         var is_can_screen_recording = handler.is_can_screen_recording(false);
         return
             <div .app>
@@ -755,6 +763,44 @@ class App: Reactor.Component
                 </div>}
                 <div #overlay style="position: absolute;size:*;background:black;opacity:0.5;display:none" />
             </div>; 
+    }
+
+    function renderCompact() {
+        var is_can_screen_recording = handler.is_can_screen_recording(false);
+        return
+            <div .app .yh>
+                <div .yh-col>
+                    <div .yh-brand>
+                        <img src={yh_logo} />
+                        <div>
+                            <div .yh-name>元鴻遠端</div>
+                            <div .yh-sub>EVOLUTION REMOTE SUPPORT</div>
+                        </div>
+                    </div>
+                    <div .title>{translate('Your Desktop')}</div>
+                    <div .your-desktop>
+                        <MyIdMenu />
+                        {key_confirmed ? <input type="text" readonly value={formatId(get_id())}/> : translate("Generating ...")}
+                    </div>
+                    <PasswordArea />
+                    {(!is_win || handler.is_installed() || disable_installation) ? "" : <InstallMe />}
+                    {is_win && handler.is_installed() && !software_update_url && handler.is_installed_lower_version() && !disable_installation ? <UpgradeMe /> : ""}
+                    {is_can_screen_recording ? "": <CanScreenRecording />}
+                    {system_error ? <SystemError /> : ""}
+                    <div .yh-out>
+                        <div .lighter-text>{translate('Control Remote Desktop')}</div>
+                        <div .yh-row>
+                            <ID @{this.remote_id} />
+                            <button .button #connect>{translate('Connect')}</button>
+                        </div>
+                    </div>
+                </div>
+                <div style="position:absolute; left:-10000px; top:-10000px; width:0; height:0; overflow:hidden">
+                    <MultipleSessions @{this.multipleSessions} />
+                </div>
+                <ConnectStatus @{this.connect_status} />
+                <div #overlay style="position: absolute;size:*;background:black;opacity:0.5;display:none" />
+            </div>;
     }
 
     event click $(button#connect) {
@@ -1387,6 +1433,8 @@ function self.ready() {
         } else {
             view.move(r[0], r[1], incoming_only ? scaleIt(incoming_only_width) : r[2], r[3]);
         }
+    } else if (yh_compact) {
+        centerize(scaleIt(yh_width), scaleIt(yh_height));
     } else {
         centerize(scaleIt(incoming_only ? incoming_only_width : 800), scaleIt(incoming_only ? 390 : 600));
     }

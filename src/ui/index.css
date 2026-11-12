@@ -439,3 +439,63 @@ textarea.grey-text {
         font-size: 1em;
     }
 }
+/* ---- Yuanhong compact customer layout ---- */
+.app.yh {
+    flow: vertical;
+    background: color(bg);
+}
+
+.yh-col {
+    size: *;
+    flow: vertical;
+    padding: 20px 26px 60px;
+    border-spacing: 14px;
+    overflow: hidden;
+}
+
+.yh-brand {
+    flow: horizontal;
+    vertical-align: middle;
+    border-spacing: 14px;
+    padding-bottom: 14px;
+    border-bottom: color(border) solid 1px;
+}
+
+.yh-brand img {
+    size: 56px;
+}
+
+.yh-name {
+    font-size: 1.6em;
+    font-weight: bold;
+    color: color(text);
+}
+
+.yh-sub {
+    font-size: 0.75em;
+    color: color(lighter-text);
+}
+
+.yh-out {
+    flow: vertical;
+    border-spacing: 6px;
+    padding-top: 12px;
+    border-top: color(border) solid 1px;
+}
+
+.yh-row {
+    flow: horizontal;
+    border-spacing: 8px;
+}
+
+.yh-row input {
+    width: *;
+}
+
+.app.yh > div.connect-status {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: *;
+}
