@@ -773,7 +773,7 @@ class App: Reactor.Component
                     <div .yh-brand>
                         <img src={yh_logo} />
                         <div>
-                            <div .yh-name>元鴻遠端</div>
+                            <div .yh-name>{"\u5143\u9D3B\u9060\u7AEF"}</div>
                             <div .yh-sub>EVOLUTION REMOTE SUPPORT</div>
                         </div>
                     </div>
