@@ -2,6 +2,7 @@ name: Build Yuanhong Remote (Windows)
 
 # Staff client   : Flutter UI, x86_64, APP_NAME=YuanhongRemote
 # Customer client: Sciter UI, x86 (32-bit, also runs on 64-bit Windows), APP_NAME=YuanhongSupport
+# Customer x64  : same Sciter UI and APP_NAME, 64-bit build
 # Staff macOS    : Flutter UI, Intel + Apple Silicon dmgs (unsigned, ad-hoc), APP_NAME=YuanhongRemote
 # Steps are trimmed copies of build-for-windows-flutter / build-for-windows-sciter in flutter-build.yml.
 
@@ -225,6 +226,90 @@ jobs:
           path: ./out
           if-no-files-found: error
 
+  customer-x64:
+    name: customer (sciter x64)
+    runs-on: windows-2022
+    steps:
+      - name: Export GitHub Actions cache environment variables
+        uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410 # v6
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+      - name: Checkout source code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          submodules: recursive
+
+      - name: Apply Yuanhong branding
+        shell: bash
+        run: python3 res/yuanhong/apply.py YuanhongSupport
+
+      - name: Install LLVM and Clang
+        uses: KyleMayes/install-llvm-action@ebc0426251bc40c7cd31162802432c68818ab8f0 # v2.0.9
+        with:
+          version: ${{ env.LLVM_VERSION }}
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
+        with:
+          toolchain: ${{ env.SCITER_RUST_VERSION }}
+          targets: x86_64-pc-windows-msvc
+          components: "rustfmt"
+
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          prefix-key: yh-windows-2022-sciter-x64
+
+      - name: Setup vcpkg with Github Actions binary cache
+        uses: lukka/run-vcpkg@b1a0dd252f06b9e25b3c022a9a03bd7a427fb6a2 # v11
+        with:
+          vcpkgDirectory: C:\vcpkg
+          vcpkgGitCommitId: ${{ env.VCPKG_COMMIT_ID }}
+          doNotCache: false
+
+      - name: Install vcpkg dependencies
+        env:
+          VCPKG_DEFAULT_HOST_TRIPLET: x64-windows-static
+        shell: bash
+        run: |
+          if ! $VCPKG_ROOT/vcpkg install --triplet x64-windows-static --x-install-root="$VCPKG_ROOT/installed"; then
+            find "${VCPKG_ROOT}/" -name "*.log" | while read -r f; do echo "$f:"; cat "$f"; done
+            exit 1
+          fi
+
+      - name: Build rustdesk
+        shell: bash
+        run: |
+          python3 res/inline-sciter.py
+          cargo build --locked --features inline,vram,hwcodec --release --bins
+          mkdir -p ./Release
+          mv ./target/release/rustdesk.exe ./Release/rustdesk.exe
+          curl -LJ -o ./Release/sciter.dll https://github.com/c-smile/sciter-sdk/raw/master/bin.win/x64/sciter.dll
+          curl -LJ -o ./usbmmidd_v2.zip https://github.com/rustdesk-org/rdev/releases/download/usbmmidd_v2/usbmmidd_v2.zip
+          unzip usbmmidd_v2.zip
+          rm -rf ./usbmmidd_v2/Win32 ./usbmmidd_v2/deviceinstaller.exe ./usbmmidd_v2/deviceinstaller64.exe ./usbmmidd_v2/usbmmidd.bat
+          mv ./usbmmidd_v2 ./Release || true
+
+      - name: Build self-extracted executable
+        shell: bash
+        run: |
+          sed -i '/dpiAware/d' res/manifest.xml
+          pushd ./libs/portable
+          pip3 install -r requirements.txt
+          python3 ./generate.py -f ../../Release/ -o . -e ../../Release/rustdesk.exe
+          popd
+          mkdir -p ./out
+          mv ./target/release/rustdesk-portable-packer.exe "./out/YuanhongSupport-${{ env.VERSION }}-x64.exe"
+
+      - name: Upload
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: yuanhong-customer-x64
+          path: ./out
+          if-no-files-found: error
+
   staff-macos:
     name: staff (macos ${{ matrix.job.arch }})
     needs: [generate-bridge]
@@ -360,7 +445,7 @@ jobs:
 
   release:
     # Windows builds gate the release; mac dmgs are attached when they succeed.
-    needs: [staff-x64, customer-x86, staff-macos]
+    needs: [staff-x64, customer-x86, customer-x64, staff-macos]
     if: ${{ !cancelled() && needs.staff-x64.result == 'success' && needs.customer-x86.result == 'success' }}
     runs-on: ubuntu-22.04
     steps:
